@@ -5,6 +5,7 @@ function [] = preprocess()
 
 clear all; clc;
 
+set(0,'DefaultFigureVisible','off');
 %switch getenv('ENV')
 %case 'IUHPC'
 %    disp('loading paths (HPC)')
@@ -17,6 +18,7 @@ clear all; clc;
 % load my own config.json
 config = loadjson('config.json')
 
+%doesn't prevent all dialog prompt
 %set(0,'DefaultFigureVisible','off');
 
 %% FIND functional/structural files
@@ -42,12 +44,12 @@ clear batch;
 %(realignment/coregistration/segmentation/normalization/smoothing)
 
 batch.filename=fullfile(cwd,'output.mat'); 
-
 batch.New.FWHM=config.fwhm; 
 batch.New.VOX=config.vox; 
 batch.New.sliceorder=[2:2:36,1:2:35];  % UI  
+%batch.New.sliceorder_select=[]; %ascending
 batch.New.steps='default_mni'; 
-batch.New.art_thresholds=[5,0.6];
+batch.New.art_thresholds=[3,1];
 
 batch.New.functionals=repmat({{}},[nsubjects,1]); % Point to functional volumes for each subject/session
 for nsub=1:nsubjects
@@ -59,6 +61,7 @@ end %note: each subject's data is defined by three sessions and one single(4d) f
 batch.New.structurals=STRUCTURAL_FILE; % Point to anatomical volumes for each subject
 
 %% CONN Setup % Default options (uses all ROIs in conn/rois/ directory); see conn_batch for additional options
+
 batch.Setup.RT=TR; % TR (seconds)
 nconditions=nsessions; % treats each session as a different condition (comment the following three lines and lines 84-86 below if you do not wish to analyze between-session differences)
 batch.Setup.conditions.names=cellstr([repmat('Session',[nconditions,1]),num2str((1:nconditions)')]);
@@ -81,6 +84,7 @@ end
 batch.Setup.outputfiles=[0,1,0];
 batch.Setup.overwrite='Yes';
 batch.Setup.done=1;
+batch.Setup.isnew=1;
 
 %% CONN Preprocessing 
 % Default options (uses White Matter+CSF+realignment+conditions as confound regressors); see conn_batch for additional options

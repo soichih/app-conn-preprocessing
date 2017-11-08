@@ -22,4 +22,8 @@ export MATLABPATH=$MATLABPATH:/usr/local/jsonlab
 
 time matlab -nodisplay -nosplash -r preprocess
 
-
+#matlab doesn't return proper exit code I need to check output myself
+if [ ! -d output ]; then
+	echo "missing output"
+	exit 1
+fi
