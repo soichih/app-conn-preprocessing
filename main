@@ -11,7 +11,7 @@ rm output.mat
 
 #for hpc
 module load matlab
-module load spm8
+module load spm
 module load conn
 export MATLABPATH=$MATLABPATH:/N/u/brlife/git/jsonlab
 

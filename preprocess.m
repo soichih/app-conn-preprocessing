@@ -17,6 +17,8 @@ clear all; clc;
 % load my own config.json
 config = loadjson('config.json')
 
+%set(0,'DefaultFigureVisible','off');
+
 %% FIND functional/structural files
 cwd=pwd;
 FUNCTIONAL_FILE=cellstr(conn_dir(config.t1)); %UI
