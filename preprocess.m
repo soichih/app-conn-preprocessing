@@ -1,25 +1,30 @@
-%% Conn batch 4Soichi
-% Lorenzo Pasquini, October 31 2017, UCSF
+% batch processing script derived from the CONN toolbox script (conn_batch_workshop_nyudataset.m; https://sites.google.com/view/conn/resources/source) for the NYU_CSC_TestRetest dataset (published in Shehzad et al., 2009, The Resting Brain: Unconstrained yet Reliable. Cerebral Cortex. doi:10.1093/cercor/bhn256)
+% 
+% Lorenzo Pasquini PhD, November 2017 
+% lorenzo.pasquini@ucsf.edu, 
+% Memory and Aging Center UCSF
+%
+% Steps:
+% 1. Run conn_batch_workshop_nyudataset. The script will:
+%       
+%       a) Preprocessing of the anatomical and functional volumes
+%         (normalization & segmentation of anatomical volumes; realignment,
+%         coregistration, normalization, outlier detection, and smooting of the 
+%         functional volumes)
+%       b) Estimate first-level seed-to-voxel connectivity maps for each of 
+%         the default seeds (located in the conn/rois folder), separately 
+%         for each subject and for each of the three test-retest sessions.
+%
 
 function [] = preprocess()
 
 clear all; clc;
 
+%doesn't revent all dialog prompt but...
 set(0,'DefaultFigureVisible','off');
-%switch getenv('ENV')
-%case 'IUHPC'
-%    disp('loading paths (HPC)')
-%    addpath(genpath('/N/u/brlife/git/jsonlab'))
-%otherwise
-%    disp('loading paths')
-%    addpath(genpath('/usr/local/jsonlab'))
-%end
 
 % load my own config.json
 config = loadjson('config.json')
-
-%doesn't prevent all dialog prompt
-%set(0,'DefaultFigureVisible','off');
 
 %% FIND functional/structural files
 cwd=pwd;
@@ -35,63 +40,72 @@ FUNCTIONAL_FILE=reshape(FUNCTIONAL_FILE,[nsubjects,nsessions]);
 STRUCTURAL_FILE={STRUCTURAL_FILE{1:nsubjects}};
 disp([num2str(size(FUNCTIONAL_FILE,1)),' subjects']);
 disp([num2str(size(FUNCTIONAL_FILE,2)),' sessions']);
-TR=2; % Repetition time = 2 seconds
+TR=2; % UI, Repetition time = 2 seconds
 
 %% PREPARES connectivity analyses (using default values for all parameters, see help conn_batch to define non-default values)
 clear batch;
+batch.filename=fullfile(cwd,'output.mat'); 
 
 %% CONN New experiment
 %(realignment/coregistration/segmentation/normalization/smoothing)
+%batch.New.FWHM=config.fwhm; 
+%batch.New.VOX=config.vox; 
+%batch.New.art_thresholds=[3,1];
 
-batch.filename=fullfile(cwd,'output.mat'); 
-batch.New.FWHM=config.fwhm; 
-batch.New.VOX=config.vox; 
-batch.New.sliceorder=[2:2:36,1:2:35];  % UI  
-%batch.New.sliceorder_select=[]; %ascending
-batch.New.steps='default_mni'; 
-batch.New.art_thresholds=[3,1];
+%batch.Denoising.filter=[config.filter_bandpass_min, config.filter_bandpass_max]; % UI, frequency filter (bandpassvalues, in Hz)
 
-batch.New.functionals=repmat({{}},[nsubjects,1]); % Point to functional volumes for each subject/session
-for nsub=1:nsubjects
-    for nses=1:nsessions
-        batch.New.functionals{nsub}{nses}{1}=FUNCTIONAL_FILE{nsub,nses};
-    end
-end %note: each subject's data is defined by three sessions and one single(4d) file per session
-
-batch.New.structurals=STRUCTURAL_FILE; % Point to anatomical volumes for each subject
-
-%% CONN Setup % Default options (uses all ROIs in conn/rois/ directory); see conn_batch for additional options
-
-batch.Setup.RT=TR; % TR (seconds)
-nconditions=nsessions; % treats each session as a different condition (comment the following three lines and lines 84-86 below if you do not wish to analyze between-session differences)
-batch.Setup.conditions.names=cellstr([repmat('Session',[nconditions,1]),num2str((1:nconditions)')]);
-for ncond=1:nconditions
-    for nsub=1:nsubjects
-        for nses=1:nsessions
-            batch.Setup.conditions.onsets{ncond}{nsub}{nses}=[];
-            batch.Setup.conditions.durations{ncond}{nsub}{nses}=[];
-        end
-    end
-end
-for ncond=1:nconditions
-    for nsub=1:nsubjects
-        for nses=ncond
-            batch.Setup.conditions.onsets{ncond}{nsub}{nses}=0;
-            batch.Setup.conditions.durations{ncond}{nsub}{nses}=inf;
-        end
-    end
-end
-batch.Setup.outputfiles=[0,1,0];
-batch.Setup.overwrite='Yes';
-batch.Setup.done=1;
+%% SETUP & PREPROCESSING step (using default values for most parameters, see help conn_batch to define non-default values)
+% CONN Setup                                            % Default options (uses all ROIs in conn/rois/ directory); see conn_batch for additional options 
+% CONN Setup.preprocessing                               (realignment/coregistration/segmentation/normalization/smoothing)
 batch.Setup.isnew=1;
+batch.Setup.nsubjects=1;
+batch.Setup.RT=TR;                                        % TR (seconds)
+batch.Setup.functionals=repmat({{}},[1,1]);       % Point to functional volumes for each subject/session
+for nsub=1:1,
+    for nses=1:nsessions,
+        batch.Setup.functionals{nsub}{nses}{1}=FUNCTIONAL_FILE{nsub,nses}; 
+    end
+end %note: each subject's data is defined by three sessions and one single (4d) file per session
+batch.Setup.structurals=STRUCTURAL_FILE;                  % Point to anatomical volumes for each subject
+nconditions=nsessions;                                  % treats each session as a different condition (comment the following three lines and lines 84-86 below if you do not wish to analyze between-session differences)
+if nconditions==1
+    batch.Setup.conditions.names={'rest'};
+    for ncond=1,for nsub=1:1,for nses=1:nsessions,              batch.Setup.conditions.onsets{ncond}{nsub}{nses}=0; batch.Setup.conditions.durations{ncond}{nsub}{nses}=inf;end;end;end     % rest condition (all sessions)
+else
+    batch.Setup.conditions.names=[{'rest'}, arrayfun(@(n)sprintf('Session%d',n),1:nconditions,'uni',0)];
+    for ncond=1,for nsub=1:1,for nses=1:nsessions,              batch.Setup.conditions.onsets{ncond}{nsub}{nses}=0; batch.Setup.conditions.durations{ncond}{nsub}{nses}=inf;end;end;end     % rest condition (all sessions)
+    for ncond=1:nconditions,for nsub=1:1,for nses=1:nsessions,  batch.Setup.conditions.onsets{1+ncond}{nsub}{nses}=[];batch.Setup.conditions.durations{1+ncond}{nsub}{nses}=[]; end;end;end
+    for ncond=1:nconditions,for nsub=1:1,for nses=ncond,        batch.Setup.conditions.onsets{1+ncond}{nsub}{nses}=0; batch.Setup.conditions.durations{1+ncond}{nsub}{nses}=inf;end;end;end % session-specific conditions
+end
+batch.Setup.preprocessing.steps=config.steps;
+%batch.Setup.preprocessing.sliceorder=[2:2:36,1:2:35]; % UI, slice order acquisition
+batch.Setup.preprocessing.sliceorder=[2:2:10,1:2:10]; % UI, slice order acquisition
+batch.Setup.preprocessing.fwhm=config.fwhm; % UI, smoothing kernel
+batch.Setup.preprocessing.art_thresholds=[5,0.9]; % outlier detector, set to default
+batch.Setup.outputfiles=[0,1,0]; % writing of denoised data as nifti 
+batch.Setup.done=1;
+batch.Setup.overwrite='Yes';                            
 
-%% CONN Preprocessing 
-% Default options (uses White Matter+CSF+realignment+conditions as confound regressors); see conn_batch for additional options
-batch.Denoising.filter=[config.filter_bandpass_min, config.filter_bandpass_max]; % UI, frequency filter (bandpassvalues, in Hz)
+% uncomment the following 3 lines if you prefer to run one step at a time:
+% conn_batch(batch); % runs Preprocessing and Setup steps only
+% clear batch;
+% batch.filename=fullfile(cwd,'conn_NYU.mat');            % Existing conn_*.mat experiment name
+
+%% DENOISING step
+% CONN Denoising                                    % Default options (uses White Matter+CSF+realignment+scrubbing+conditions as confound regressors); see conn_batch for additional options 
+batch.Denoising.filter=[0.01, 0.1];                 % UI, frequency filter (band-pass values, in Hz)
 batch.Denoising.done=1;
 batch.Denoising.overwrite='Yes';
 
-%% RUNS analyses
-conn_batch(batch);
+% uncomment the following 3 lines if you prefer to run one step at a time:
+% conn_batch(batch); % runs Denoising step only
+% clear batch;
+% batch.filename=fullfile(cwd,'conn_NYU.mat');            % Existing conn_*.mat experiment name
 
+%% FIRST-LEVEL ANALYSIS step
+% CONN Analysis                                     % Default options (uses all ROIs in conn/rois/ as connectivity sources); see conn_batch for additional options 
+batch.Analysis.done=1;
+batch.Analysis.overwrite='Yes';
+
+%% Run all analyses
+conn_batch(batch);
