@@ -11,12 +11,13 @@ rm output.mat
 
 #for hpc
 module load matlab
-module load spm
+#module load spm
 module load conn
+export MATLABPATH=$MATLABPATH:/N/u/brlife/git/spm12
 export MATLABPATH=$MATLABPATH:/N/u/brlife/git/jsonlab
 
 #for vm
-export MATLABPATH=$MATLABPATH:/usr/local/spm8
+export MATLABPATH=$MATLABPATH:/usr/local/spm12
 export MATLABPATH=$MATLABPATH:/usr/local/conn17f
 export MATLABPATH=$MATLABPATH:/usr/local/jsonlab
 

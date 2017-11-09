@@ -78,8 +78,7 @@ else
     for ncond=1:nconditions,for nsub=1:1,for nses=ncond,        batch.Setup.conditions.onsets{1+ncond}{nsub}{nses}=0; batch.Setup.conditions.durations{1+ncond}{nsub}{nses}=inf;end;end;end % session-specific conditions
 end
 batch.Setup.preprocessing.steps=config.steps;
-%batch.Setup.preprocessing.sliceorder=[2:2:36,1:2:35]; % UI, slice order acquisition
-batch.Setup.preprocessing.sliceorder=[2:2:10,1:2:10]; % UI, slice order acquisition
+batch.Setup.preprocessing.sliceorder=[2:2:36,1:2:35]; % UI, slice order acquisition
 batch.Setup.preprocessing.fwhm=config.fwhm; % UI, smoothing kernel
 batch.Setup.preprocessing.art_thresholds=[5,0.9]; % outlier detector, set to default
 batch.Setup.outputfiles=[0,1,0]; % writing of denoised data as nifti 
