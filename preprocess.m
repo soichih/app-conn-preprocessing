@@ -28,8 +28,8 @@ config = loadjson('config.json')
 
 %% FIND functional/structural files
 cwd=pwd;
-FUNCTIONAL_FILE=cellstr(conn_dir(config.t1)); %UI
-STRUCTURAL_FILE=cellstr(conn_dir(config.bold)); %UI
+FUNCTIONAL_FILE=cellstr(conn_dir(config.bold)); %UI
+STRUCTURAL_FILE=cellstr(conn_dir(config.t1)); %UI
 nsubjects=1;
 if rem(length(FUNCTIONAL_FILE),nsubjects),error('mismatch number of functionalfiles');
 end
@@ -42,17 +42,10 @@ disp([num2str(size(FUNCTIONAL_FILE,1)),' subjects']);
 disp([num2str(size(FUNCTIONAL_FILE,2)),' sessions']);
 TR=2; % UI, Repetition time = 2 seconds
 
-%% PREPARES connectivity analyses (using default values for all parameters, see help conn_batch to define non-default values)
+%% CONN-SPECIFIC SECTION: RUNS PREPROCESSING/SETUP/DENOISING/ANALYSIS STEPS
+%% Prepares batch structure
 clear batch;
 batch.filename=fullfile(cwd,'output.mat'); 
-
-%% CONN New experiment
-%(realignment/coregistration/segmentation/normalization/smoothing)
-%batch.New.FWHM=config.fwhm; 
-%batch.New.VOX=config.vox; 
-%batch.New.art_thresholds=[3,1];
-
-%batch.Denoising.filter=[config.filter_bandpass_min, config.filter_bandpass_max]; % UI, frequency filter (bandpassvalues, in Hz)
 
 %% SETUP & PREPROCESSING step (using default values for most parameters, see help conn_batch to define non-default values)
 % CONN Setup                                            % Default options (uses all ROIs in conn/rois/ directory); see conn_batch for additional options 
@@ -78,7 +71,7 @@ else
     for ncond=1:nconditions,for nsub=1:1,for nses=ncond,        batch.Setup.conditions.onsets{1+ncond}{nsub}{nses}=0; batch.Setup.conditions.durations{1+ncond}{nsub}{nses}=inf;end;end;end % session-specific conditions
 end
 batch.Setup.preprocessing.steps=config.steps;
-batch.Setup.preprocessing.sliceorder=[2:2:36,1:2:35]; % UI, slice order acquisition
+batch.Setup.preprocessing.sliceorder=[2:2:34,1:2:33]; % UI, slice order acquisition
 batch.Setup.preprocessing.fwhm=config.fwhm; % UI, smoothing kernel
 batch.Setup.preprocessing.art_thresholds=[5,0.9]; % outlier detector, set to default
 batch.Setup.outputfiles=[0,1,0]; % writing of denoised data as nifti 
@@ -92,6 +85,14 @@ batch.Setup.overwrite='Yes';
 
 %% DENOISING step
 % CONN Denoising                                    % Default options (uses White Matter+CSF+realignment+scrubbing+conditions as confound regressors); see conn_batch for additional options 
+GS = 0; %UI, whether to perform fglobal signal regression or not
+for thispart = 1
+    if GS == 1
+        batch.Denoising.confounds.names={'Grey Matter','White Matter','CSF','realignment','scrubbing','Effect of rest'};
+    else
+        batch.Denoising.confounds.names={'White Matter','CSF','realignment','scrubbing','Effect of rest'};
+    end
+end
 batch.Denoising.filter=[0.01, 0.1];                 % UI, frequency filter (band-pass values, in Hz)
 batch.Denoising.done=1;
 batch.Denoising.overwrite='Yes';
@@ -108,3 +109,5 @@ batch.Analysis.overwrite='Yes';
 
 %% Run all analyses
 conn_batch(batch);
+
+quit

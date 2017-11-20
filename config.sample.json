@@ -1,8 +1,7 @@
 {
-	"bold": "/home/hayashis/testdata/lorenzo1/1/func_59ef52e6c32d32002dc1923d/1_bold.nii.gz",
-	"t1": "/home/hayashis/testdata/lorenzo1/1/anat_59ef4c255dfe72002b77d7ee/1_t1.nii.gz",
+	"bold": "testdata/10159_bold.nii.gz",
+	"t1": "testdata/10159_t1.nii.gz",
 	"fwhm": 8,
-	"vox": 2,
 	"steps": "default_mni",
 	"filter_bandpass_min": 0.01,
 	"filter_bandpass_max": 0.1
