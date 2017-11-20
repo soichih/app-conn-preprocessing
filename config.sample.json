@@ -4,5 +4,9 @@
 	"fwhm": 8,
 	"steps": "default_mni",
 	"filter_bandpass_min": 0.01,
-	"filter_bandpass_max": 0.1
+	"filter_bandpass_max": 0.1,
+	"tr": 2,
+	"sliceorder_a": 33,
+	"sliceorder_b": 34,
+	"do_global_signal_regression": true
 }
