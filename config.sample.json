@@ -6,7 +6,6 @@
 	"filter_bandpass_min": 0.01,
 	"filter_bandpass_max": 0.1,
 	"tr": 2,
-	"sliceorder_a": 33,
-	"sliceorder_b": 34,
+	"sliceorder": "ascending",
 	"do_global_signal_regression": true
 }
