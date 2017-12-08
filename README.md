@@ -1,6 +1,8 @@
 # app-conn-preprocessing
 fMRI preprocessing via CONN
 
+![conn](https://raw.githubusercontent.com/soichih/app-conn-preprocessing/master/conn.jpg)
+
 Lorenzo Pasquini PhD, December 2017 
 lorenzo.pasquini@ucsf.edu, 
 Memory and Aging Center UCSF
