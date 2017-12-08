@@ -71,7 +71,6 @@ else
 end
 batch.Setup.preprocessing.steps=config.steps;
 batch.Setup.preprocessing.sliceorder=config.sliceorder;
-%batch.Setup.preprocessing.sliceorder=[2:2:config.sliceorder_a,1:2:config.sliceorder_b]; % UI, slice order acquisition
 batch.Setup.preprocessing.fwhm=config.fwhm; % UI, smoothing kernel
 batch.Setup.preprocessing.art_thresholds=[5,0.9]; % outlier detector, set to default
 batch.Setup.outputfiles=[0,1,0]; % writing of denoised data as nifti 
