@@ -1,48 +1,94 @@
-# app-conn-preprocessing
-fMRI preprocessing via CONN
+<h1 align="center">CONN preprocessing</h1>
 
-![conn](https://raw.githubusercontent.com/soichih/app-conn-preprocessing/master/conn.jpg)
+<p align="center">
+  fMRI preprocessing via CONN
+</p>
 
-Lorenzo Pasquini PhD, December 2017 
-lorenzo.pasquini@ucsf.edu, 
-Memory and Aging Center UCSF
+<p align="center">
+  <a href="https://github.com/brainlife/abcd-spec"><img src="https://img.shields.io/badge/ABCD_Spec-v1.1-green.svg" alt="ABCD Spec v1.1"></a>
+  <a href="https://doi.org/10.25663/bl.app.54"><img src="https://img.shields.io/badge/Brainlife-bl.app.54-blue.svg" alt="Run on brainlife.io"></a>
+</p>
 
-This script was derived from the CONN toolbox script
-(conn_batch_workshop_nyudataset.m; https://sites.google.com/view/conn/resources/source) 
-which was used for the NYU_CSC_TestRetest dataset 
-(published in Shehzad et al., 2009, The Resting Brain: Unconstrained yet Reliable. Cerebral Cortex. doi:10.1093/cercor/bhn256).
+## At a glance
 
-This script can be used to preprocess resting-state fMRI data and performs following steps:
-1. realignment
-2. slice-timing correction
-3. outlier identification
-4. coregistration with structural scan
-5. segmentation of structural MRI in grey matter, white matter and CSF
-6. Normalization of structural and subsequently of functional files 
-7. Spatial smoothing
-8. Temporal filtering and the aCompCor method are subsequently used to control for residual physiological and motion artifacts (e.g. head movement, white-matter, CSF)
-9. Finally, first level analyses are performed resulting in ROI-to-ROI and seed-to-voxel functional connectiviy estimates using the atlas implemented in CONN (a combination of FSL Harvard-Oxford atlas cortical & subcortical areas and AAL atlas cerebellar areas)
+<!-- brainlife-app:begin (generated from the App manifest; edit the manifest, not this block) -->
 
-To perform this steps you need to have the CONN and SPM12 toolboxes installed in MATLAB. Repeatedly running the script for the same subject will overwrite the old data.
+> **fMRI preprocessing via CONN**
 
-Needed INPUTS: 
-1. Individual raw resting-state fMRI files, converted from DICOM to 4D nifti files 
-2. Individual structural MRI files, also as nifti files
+| | |
+|---|---|
+| **Inputs** | `neuro/func/task` · `neuro/anat/t1w` |
+| **Outputs** | `raw` |
+| **Resources** | 12 CPUs |
+| **Run it** | [doi.org/10.25663/bl.app.54](https://doi.org/10.25663/bl.app.54) |
 
-OUTPUTS:
-1. Denoised resting-state fMRI files - to be found in output/results/preprocessing/niftiDATA_Sub*.nii
-2. ROI-to-ROI connectivity matrix (resultsROI_Subject###_Condition###.mat) and seed-to-voxel functional connectiviy (BETA.*nii) estimates in output/results/firstlevel/ANALYSIS-01. The file _list_sources.mat gives the identity of the 168 sources used to perfrom the analysis (164 ROIs + conditions)
-3. Time series of confounds and ROIs in output/DATA/ROI_Subject###_Condition###.mat
-4. Output.mat and preprocess.m can be used to retrieve information on the performed preprocessing steps and used script
+#### Inputs
 
-PARAMETERS:
-The user needs to define several parameters when starting the preprocessing pipeline:
-1. TR (in seconds, e.g. 2)
-2. slice acquisition order (e.g. 'ascending','descending','interleaved (middle-top)','interleaved (bottom-up)','interleaved (top-down)', 'interleaved (Siemens)','BIDS')
-3. smoothing kernel (fwhm, defualt is 8mm)
-4. Choose template normalization (default is MNI)
-5. Spatial filter range in Hz (default is 0.01 for min and 0.1 for max)
-6. Whether to perform gobal signal regression or not
+| Input | Datatype | Required | Description |
+|---|---|---|---|
+| `0` | `neuro/func/task` | yes |  |
+| `1` | `neuro/anat/t1w` | yes |  |
 
-If you use this script, please cite the CONN functional connectivity toolbox (Whitfield-Gabrieli, S., and Nieto-Castanon, 2012; http://www.nitrc.org/projects/conn.)
-Further information such as a the CONN manual and a description of the functions can be found here: https://sites.google.com/view/conn/resources/manuals. 
+#### Outputs
+
+| Output | Datatype | Description |
+|---|---|---|
+| `0` | `raw` |  |
+
+<details>
+<summary><b>Parameters</b> (7)</summary>
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `filter_bandpass_min` | number | `0.01` |  |
+| `filter_bandpass_max` | number | `0.1` |  |
+| `steps` | enum | `default_mni` | Data preprocessing steps to perform Options: `default_mni`, `default_mniphase`, `default_ss`, `default_ssphase`, `default_ssnl`. |
+| `sliceorder` | enum | `ascending` | When DICOM images are converted to nifti, the slice order may not be preserved. This parameter tells CONN how slices within nifti is ordered. Options: `ascending`, `descending`, `interleaved (middle-top)`, `interleaved (bottom-up)`, `interleaved (top-down)`, `interleaved (Siemens)`, `BIDS`. |
+| `do_global_signal_regression` | boolean | `true` | Do global signal regression |
+| `tr` | integer | `2` |  |
+| `fwhm` | integer | `8` | Edit me |
+
+</details>
+
+<!-- brainlife-app:end -->
+
+## Running the App
+
+### On brainlife.io
+
+Open the App at [doi.org/10.25663/bl.app.54](https://doi.org/10.25663/bl.app.54), choose `neuro/func/task`, `neuro/anat/t1w` from your project, set the parameters and press **Execute**. The results are saved to your project as `raw`.
+
+### Locally
+
+You need [`jq`](https://jqlang.github.io/jq/).
+
+1. Clone this repository.
+2. Create `config.json` with the paths to your inputs and the parameters:
+
+   ```json
+   {
+       "bold": "/path/to/0/bold",
+       "t1": "/path/to/1/t1",
+       "filter_bandpass_min": 0.01,
+       "filter_bandpass_max": 0.1,
+       "steps": "default_mni",
+       "sliceorder": "ascending",
+       "do_global_signal_regression": true,
+       "tr": 2,
+       "fwhm": 8
+   }
+   ```
+
+3. Run `./main`.
+
+## Citing
+
+If you use this App, please cite it, the software it builds on and brainlife.io:
+
+- CONN preprocessing. brainlife.io App. [doi:10.25663/bl.app.54](https://doi.org/10.25663/bl.app.54)
+- Hayashi S, Caron BA, Heinsfeld AS, et al. brainlife.io: a decentralized and open-source cloud platform to support neuroscience research. *Nature Methods* 21:809–813 (2024). [doi:10.1038/s41592-024-02237-2](https://doi.org/10.1038/s41592-024-02237-2)
+- Avesani P, McPherson B, Hayashi S, et al. The open diffusion data derivatives, brain data upcycling via integrated publishing of derivatives and reproducible open cloud services. *Scientific Data* 6:69 (2019). [doi:10.1038/s41597-019-0073-y](https://doi.org/10.1038/s41597-019-0073-y)
+
+## Authors
+
+Maintained by [@soichih](https://github.com/soichih).
